@@ -3,7 +3,7 @@ import { ParticleJS, ParticleScene } from './particles-es6.js';
 const engine = new ParticleJS('#hero');
 
 // ✅ Pass a ParticleScene instance
-engine.setScene(ParticleJS.Scenes.rain).play();
+engine.setScene(ParticleJS.Particles.rain).play();
 
 // ❌ These will throw:
 // engine.setScene('rain');
@@ -26,3 +26,4 @@ const starfield = new ParticleScene('starfield', (engine) => ({
 }));
 
 //engine.setScene(starfield);
+
