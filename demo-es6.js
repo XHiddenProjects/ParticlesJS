@@ -25,5 +25,6 @@ const starfield = new ParticleScene('starfield', (engine) => ({
   interactivity: { events: { onhover: { enable: false }, onclick: { enable: false }, resize: true } }
 }));
 
-//engine.setScene(starfield);
+engine.setScene(starfield);
+
 
