@@ -21,7 +21,7 @@ This README covers the design, API, configuration options, presets, and usage pa
 5. [Options Schema](#options-schema)  
    - [Particles](#particles)  
    - [Interactivity](#interactivity)  
-6. [Built‑in Scene Presets](#built-in-scene-presets)  
+6. [Built‑in Scene Presets](#builtin-scene-presets)  
 7. [Advanced Configuration Examples](#advanced-configuration-examples)  
 8. [Rendering & Physics Details](#rendering--physics-details)  
 9. [Performance & Responsiveness](#performance--responsiveness)  
