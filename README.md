@@ -52,6 +52,10 @@ This README covers the design, API, configuration options, presets, and usage pa
 
 ## Quick Start
 
+> CDN:
+> * https://cdn.jsdelivr.net/gh/XHiddenProjects/ParticlesJS@1.0.1/particles.min.js
+> * https://cdn.jsdelivr.net/gh/XHiddenProjects/ParticlesJS@1.0.1/particles-es6.min.js
+
 ### ES Module Usage
 
 ```html
