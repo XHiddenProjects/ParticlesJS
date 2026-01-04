@@ -419,5 +419,5 @@ A: Call `engine.destroy()` to pause, unbind events, and remove the canvas from t
 
 ## License
 
-MIT — © Your Name
+MIT — ©XHiddenProjects
 
