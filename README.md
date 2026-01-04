@@ -78,7 +78,7 @@ This README covers the design, API, configuration options, presets, and usage pa
   import { ParticleJS } from './particles-es6.js';
 
   const engine = new ParticleJS('#hero');
-  engine.setScene(ParticleJS.Scenes.snow).play();
+  engine.setScene(ParticleJS.Particles.snow).play();
 </script>
 ```
 
@@ -90,7 +90,7 @@ This README covers the design, API, configuration options, presets, and usage pa
 <script src="./particles.js"></script>
 <script>
   const engine = new window.ParticleJS('#hero');
-  engine.setScene(window.ParticleJS.Scenes.confetti).play();
+  engine.setScene(window.ParticleJS.Particles.confetti).play();
 </script>
 ```
 
@@ -238,7 +238,7 @@ interface EngineOptions {
 
 ## Built‑in Scene Presets
 
-Use via `engine.setScene(ParticleJS.Scenes.<name>)`.
+Use via `engine.setScene(ParticleJS.Particles.<name>)`.
 
 - **`rain`**  
   Transparent canvas, **image** particles (raindrop icon), high count with density scaling, straight downward motion, fast speed range, links disabled.
