@@ -33,13 +33,13 @@
 
 ## What it is
 
-ParticleJS is a **Canvas 2D** particle renderer that attaches an internal `<canvas class="particle-js">` to your container element, runs an animation loop via `requestAnimationFrame`, and provides configurable particle spawning, drawing, linking lines, and pointer-based interactivity. turn1search2
+ParticleJS is a **Canvas 2D** particle renderer that attaches an internal `<canvas class="particle-js">` to your container element, runs an animation loop via `requestAnimationFrame`, and provides configurable particle spawning, drawing, linking lines, and pointer-based interactivity. 
 
 It supports:
 
-- multiple particle shapes (`circle`, `edge`, `triangle`, `polygon`, `image`) turn1search2
-- pointer hover/click modes (`grab`, `bubble`, `repulse`, `push`, `remove`, `explode`, `rocketBoost`) turn1search2
-- pluggable movement behaviors (built-in + custom, global or per-instance) turn1search2
+- multiple particle shapes (`circle`, `edge`, `triangle`, `polygon`, `image`) 
+- pointer hover/click modes (`grab`, `bubble`, `repulse`, `push`, `remove`, `explode`, `rocketBoost`) 
+- pluggable movement behaviors (built-in + custom, global or per-instance) 
 
 ---
 
@@ -48,10 +48,10 @@ It supports:
 - **Two builds**
   - IIFE: usable directly in browser without a bundler (`window.ParticleJS`).
   - ES module: `import { ParticleJS, ParticleScene } from './particles-es6.js'`.
-- **Retina support (DPR-aware):** scales internal canvas by `devicePixelRatio` when `retina_detect` is enabled. turn1search2
-- **Density scaling:** automatically scales particle count with canvas area (optional). turn1search2
-- **Scene switching:** apply a new configuration at runtime with `setScene(new ParticleScene(...))`. turn1search2
-- **Behavior system:** register movement behaviors globally or per engine instance; behaviors can be composed. turn1search2
+- **Retina support (DPR-aware):** scales internal canvas by `devicePixelRatio` when `retina_detect` is enabled. 
+- **Density scaling:** automatically scales particle count with canvas area (optional). 
+- **Scene switching:** apply a new configuration at runtime with `setScene(new ParticleScene(...))`. 
+- **Behavior system:** register movement behaviors globally or per engine instance; behaviors can be composed. 
 
 ---
 
@@ -83,7 +83,7 @@ It supports:
 ```
 
 - `particles.js` attaches a canvas to your container; if the container is `position: static`, it is set to `position: relative`.
-- The canvas uses `pointer-events: none` so it won't block UI interactions in the container. turn1search2
+- The canvas uses `pointer-events: none` so it won't block UI interactions in the container. 
 
 ### ES module build (import)
 
@@ -118,15 +118,15 @@ It supports:
 
 The engine class:
 
-- **Constructor:** `new ParticleJS(container, options?)` where `container` is an `HTMLElement` or a selector string. turn1search2
-- **Lifecycle:** `play()`, `pause()`, `destroy()` turn1search2
-- **Scene management:** `setScene(scene)` re-applies defaults, rebinds events, resizes, and repopulates particles. turn1search2
+- **Constructor:** `new ParticleJS(container, options?)` where `container` is an `HTMLElement` or a selector string. 
+- **Lifecycle:** `play()`, `pause()`, `destroy()` 
+- **Scene management:** `setScene(scene)` re-applies defaults, rebinds events, resizes, and repopulates particles. 
 
 Internally, the engine:
 
-- creates or reuses `canvas.particle-js` inside the container turn1search2
-- maintains a particle array and updates/draws each frame turn1search2
-- optionally draws linking lines and hover "grab" lines turn1search2
+- creates or reuses `canvas.particle-js` inside the container 
+- maintains a particle array and updates/draws each frame 
+- optionally draws linking lines and hover "grab" lines 
 
 ### ParticleScene
 
@@ -140,25 +140,25 @@ const scene = new ParticleScene('dense', (engine) => ({
 }));
 ```
 
-`scene.toOptions(engine)` resolves the final options (useful for functional scenes). turn1search2
+`scene.toOptions(engine)` resolves the final options (useful for functional scenes). 
 
 ### Behaviors
 
 ParticleJS has a **movement behavior registry**:
 
-- built-in behaviors include: `default`, `rocket`, `slide`, `swirl`. turn1search2
-- register globally: `ParticleJS.registerBehavior(name, fn)` turn1search2
-- register per instance: `engine.registerBehavior(name, fn)` turn1search2
+- built-in behaviors include: `default`, `rocket`, `slide`, `swirl`. 
+- register globally: `ParticleJS.registerBehavior(name, fn)` 
+- register per instance: `engine.registerBehavior(name, fn)` 
 
 Behaviors can be specified as:
 
 - a **string** (name of a behavior)
 - a **function** `(particle, dtSeconds, engine) => void | { skipPhysics?: boolean }`
-- an **array** of strings/functions (composed behaviors executed in order) turn1search2
+- an **array** of strings/functions (composed behaviors executed in order) 
 
-Per-particle override is supported via `p.behavior` (same spec types). turn1search2
+Per-particle override is supported via `p.behavior` (same spec types). 
 
-> **Error isolation:** behavior exceptions are caught and logged via `console.warn` so the animation loop continues. turn1search2
+> **Error isolation:** behavior exceptions are caught and logged via `console.warn` so the animation loop continues. 
 
 ---
 
@@ -166,104 +166,104 @@ Per-particle override is supported via `p.behavior` (same spec types). turn1sear
 
 ### `new ParticleJS(container, options?)`
 
-- **container:** `HTMLElement | string` selector. Throws if not found. turn1search2
-- **options:** configuration; defaults are applied via an internal merge. turn1search2
+- **container:** `HTMLElement | string` selector. Throws if not found. 
+- **options:** configuration; defaults are applied via an internal merge. 
 
 ### `engine.play()`
 
-Starts the `requestAnimationFrame` loop and advances the simulation with a capped timestep (`dt <= 0.05s`). turn1search2
+Starts the `requestAnimationFrame` loop and advances the simulation with a capped timestep (`dt <= 0.05s`). 
 
 ### `engine.pause()`
 
-Stops the loop and cancels the RAF handle. turn1search2
+Stops the loop and cancels the RAF handle. 
 
 ### `engine.destroy()`
 
-Unbinds events, stops animation, and removes the canvas from the container (if present). turn1search2
+Unbinds events, stops animation, and removes the canvas from the container (if present). 
 
 ### `engine.setScene(scene)`
 
 - requires an instance of `ParticleScene`
-- re-applies defaults and reinitializes (events, resize, particle population) turn1search2
+- re-applies defaults and reinitializes (events, resize, particle population) 
 
 ### `ParticleJS.registerBehavior(name, fn)` (static)
 
-Registers a behavior in the global registry. Validates argument types. turn1search2
+Registers a behavior in the global registry. Validates argument types. 
 
 ### `engine.registerBehavior(name, fn)`
 
-Registers a behavior on one engine instance. Validates argument types. turn1search2
+Registers a behavior on one engine instance. Validates argument types. 
 
 ### `ParticleJS.unregisterBehavior(name)` / `engine.unregisterBehavior(name)`
 
-Removes the named behavior from the corresponding registry. turn1search2
+Removes the named behavior from the corresponding registry. 
 
 ---
 
 ## Configuration
 
-ParticleJS merges user-provided options onto a default configuration. turn1search2
+ParticleJS merges user-provided options onto a default configuration. 
 
 ### Top-level options
 
-- `retina_detect: boolean` -- DPR scaling. turn1search2
-- `background: string` -- canvas background (`transparent` by default). turn1search2
-- `particles: object` -- particle appearance & movement. turn1search2
-- `interactivity: object` -- hover/click/resize behaviors. turn1search2
-- `behaviors: object` -- optional registry of custom behaviors (name -> fn) that can be referenced by string. turn1search2
+- `retina_detect: boolean` -- DPR scaling. 
+- `background: string` -- canvas background (`transparent` by default). 
+- `particles: object` -- particle appearance & movement. 
+- `interactivity: object` -- hover/click/resize behaviors. 
+- `behaviors: object` -- optional registry of custom behaviors (name -> fn) that can be referenced by string. 
 
 ### Particles options
 
-Below are the most commonly used knobs (names match the engine defaults): turn1search2
+Below are the most commonly used knobs (names match the engine defaults): 
 
 #### `particles.number`
 
-- `value: number` -- base particle count. turn1search2
-- `density.enable: boolean` -- scale count by canvas area. turn1search2
-- `density.value_area: number` -- reference area for density scaling (default `800`). turn1search2
-- `max: number` -- hard cap for particle count (default `300`). turn1search2
+- `value: number` -- base particle count. 
+- `density.enable: boolean` -- scale count by canvas area. 
+- `density.value_area: number` -- reference area for density scaling (default `800`). 
+- `max: number` -- hard cap for particle count (default `300`). 
 
 #### `particles.color`
 
-- `value: string | string[]` -- a color or list of colors; one is picked at spawn time. turn1search2
+- `value: string | string[]` -- a color or list of colors; one is picked at spawn time. 
 
 #### `particles.shape`
 
-- `type: 'circle' | 'edge' | 'triangle' | 'polygon' | 'image'` turn1search2
-- `stroke.width`, `stroke.color` -- outline settings. turn1search2
-- `polygon.nb_sides` -- polygon side count. turn1search2
-- `image.src`, `image.width`, `image.height` -- image particle source and draw size. turn1search2
+- `type: 'circle' | 'edge' | 'triangle' | 'polygon' | 'image'` 
+- `stroke.width`, `stroke.color` -- outline settings. 
+- `polygon.nb_sides` -- polygon side count. 
+- `image.src`, `image.width`, `image.height` -- image particle source and draw size. 
 
-> Image particles are loaded via `new Image()` and cached by source URL. turn1search2
+> Image particles are loaded via `new Image()` and cached by source URL. 
 
 #### `particles.opacity` / `particles.size`
 
 - `value: number`
 - `random: boolean`
-- `anim.enable`, `anim.speed`, `anim.*` are present in defaults but animation is not explicitly implemented in the core step shown in these builds. turn1search2
+- `anim.enable`, `anim.speed`, `anim.*` are present in defaults but animation is not explicitly implemented in the core step shown in these builds. 
 
 #### `particles.line_linked`
 
 - `enable: boolean`
 - `distance: number` -- max link distance.
-- `color: string`, `opacity: number`, `width: number` turn1search2
+- `color: string`, `opacity: number`, `width: number` 
 
-The engine uses a uniform grid to reduce the cost of line linking by only checking nearby cells. turn1search2
+The engine uses a uniform grid to reduce the cost of line linking by only checking nearby cells. 
 
 #### `particles.physics`
 
 - `drag: number` -- applied each frame as `dragFactor = drag ** (dt * 60)`.
-- `gravity: number` -- vertical acceleration term added to `vy`. turn1search2
+- `gravity: number` -- vertical acceleration term added to `vy`. 
 
 #### `particles.move`
 
 - `enable: boolean`
 - `speed: number | [min, max]`
-- `direction: 'none' | 'top' | 'bottom' | 'left' | 'right' | 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left'` turn1search2
+- `direction: 'none' | 'top' | 'bottom' | 'left' | 'right' | 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left'` 
 - `random: boolean`, `straight: boolean`
 - `out_mode: 'out' | 'bounce'` -- wrap or bounce at bounds.
 - `attract.enable`, `attract.rotateX`, `attract.rotateY` -- center attraction.
-- `behavior: string | fn | (string|fn)[]` -- movement behaviors (see [Behaviors](#behaviors)). turn1search2
+- `behavior: string | fn | (string|fn)[]` -- movement behaviors (see [Behaviors](#behaviors)). 
 
 ### Interactivity options
 
@@ -274,33 +274,33 @@ Where pointer coordinates are measured:
 - `'container'` (default)
 - `'canvas'`
 - `'window'`
-- or a custom element reference turn1search2
+- or a custom element reference 
 
 #### `interactivity.events`
 
-- `onhover.enable: boolean`, `onhover.mode: 'grab' | 'bubble' | 'repulse' | 'slide'` turn1search2
-- `onclick.enable: boolean`, `onclick.mode: 'push' | 'remove' | 'repulse' | 'bubble' | 'explode' | 'rocketBoost'` turn1search2
-- `resize: boolean` -- repopulates particles on resize. turn1search2
+- `onhover.enable: boolean`, `onhover.mode: 'grab' | 'bubble' | 'repulse' | 'slide'` 
+- `onclick.enable: boolean`, `onclick.mode: 'push' | 'remove' | 'repulse' | 'bubble' | 'explode' | 'rocketBoost'` 
+- `resize: boolean` -- repopulates particles on resize. 
 
-> Note: hover and click are **disabled by default** in the default options. turn1search2
+> Note: hover and click are **disabled by default** in the default options. 
 
 #### `interactivity.modes`
 
 Mode settings used by hover/click logic:
 
-- `grab.distance`, `grab.line_linked.opacity` turn1search2
-- `bubble.distance`, `bubble.size`, `bubble.opacity`, `bubble.duration` turn1search2
-- `repulse.distance`, `repulse.duration` turn1search2
-- `push.particles_nb`, `remove.particles_nb` turn1search2
+- `grab.distance`, `grab.line_linked.opacity` 
+- `bubble.distance`, `bubble.size`, `bubble.opacity`, `bubble.duration` 
+- `repulse.distance`, `repulse.duration` 
+- `push.particles_nb`, `remove.particles_nb` 
 - `explode.power`
-- `rocketBoost.power` turn1search2
+- `rocketBoost.power` 
 
 ### Custom behaviors in options
 
 In addition to registering behaviors via API, you can provide a registry inside options and reference behaviors by name:
 
-- `options.behaviors` -- custom registry merged into the resolution map turn1search2
-- `options.particles.move.behaviors` -- additional behavior registry at the move level turn1search2
+- `options.behaviors` -- custom registry merged into the resolution map 
+- `options.particles.move.behaviors` -- additional behavior registry at the move level 
 
 ---
 
@@ -319,7 +319,7 @@ engine.play();
 engine.setScene(busy);
 ```
 
-Scene application via `setScene` triggers rebind, resize, and repopulation. turn1search2
+Scene application via `setScene` triggers rebind, resize, and repopulation. 
 
 ### 2) Add a custom behavior (global)
 
@@ -334,7 +334,7 @@ const engine = new ParticleJS('#hero', {
 engine.play();
 ```
 
-Global behavior registration is supported via `ParticleJS.registerBehavior`. turn1search2
+Global behavior registration is supported via `ParticleJS.registerBehavior`. 
 
 ### 3) Compose behaviors
 
@@ -348,7 +348,7 @@ const engine = new ParticleJS('#hero', {
 });
 ```
 
-Behavior specs can be arrays (executed in order). turn1search2
+Behavior specs can be arrays (executed in order). 
 
 ### 4) Click to "explode"
 
@@ -362,16 +362,16 @@ const engine = new ParticleJS('#hero', {
 engine.play();
 ```
 
-The `explode` click mode applies an impulse based on distance to click position. turn1search2
+The `explode` click mode applies an impulse based on distance to click position. 
 
 ---
 
 ## Performance & quality tips
 
-- **Keep particle count reasonable.** Use `particles.number.max` to cap density scaling. turn1search2
-- **Reduce linking cost** by disabling `line_linked` or lowering `distance` and `opacity`. Linking checks neighbors in a grid, but still scales with particle count. turn1search2
-- **Retina tradeoff:** `retina_detect` improves sharpness at the cost of more pixels to render. turn1search2
-- **Prefer simple shapes** over image particles for large counts (image draw calls are heavier). Image sources are cached. turn1search2
+- **Keep particle count reasonable.** Use `particles.number.max` to cap density scaling. 
+- **Reduce linking cost** by disabling `line_linked` or lowering `distance` and `opacity`. Linking checks neighbors in a grid, but still scales with particle count. 
+- **Retina tradeoff:** `retina_detect` improves sharpness at the cost of more pixels to render. 
+- **Prefer simple shapes** over image particles for large counts (image draw calls are heavier). Image sources are cached. 
 
 ---
 
@@ -379,11 +379,11 @@ The `explode` click mode applies an impulse based on distance to click position.
 
 ### Canvas not visible
 
-- Ensure the container has a non-zero size (e.g., set `height`). The engine sizes the canvas to the container's bounding box. turn1search2
+- Ensure the container has a non-zero size (e.g., set `height`). The engine sizes the canvas to the container's bounding box. 
 
 ### Particles look blurry
 
-- Enable `retina_detect` (default) so the canvas scales with DPR. turn1search2
+- Enable `retina_detect` (default) so the canvas scales with DPR. 
 
 ### Hover/click do nothing
 
@@ -398,11 +398,11 @@ interactivity: {
 }
 ```
 
-Interactivity event toggles default to `false`. turn1search2
+Interactivity event toggles default to `false`. 
 
 ### My custom behavior breaks animation
 
-- Behavior errors are caught; check DevTools console for `ParticleJS behavior error`. turn1search2
+- Behavior errors are caught; check DevTools console for `ParticleJS behavior error`. 
 
 ---
 
@@ -415,7 +415,7 @@ Interactivity event toggles default to `false`. turn1search2
 
 ### Appendix: Minimal full configuration skeleton
 
-Below is a compact scaffold you can copy and customize (values shown are representative of the built-in defaults). turn1search2
+Below is a compact scaffold you can copy and customize (values shown are representative of the built-in defaults). 
 
 ```js
 const options = {
