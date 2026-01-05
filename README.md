@@ -1,4 +1,4 @@
-# Particle Engine Documentation
+# ParticleJS Documentation
 
 This documentation covers both builds of the engine:
 
