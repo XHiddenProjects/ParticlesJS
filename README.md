@@ -1,5 +1,5 @@
-
-# ParticleJS Engine – Professional Documentation (Clean Edition)
+# ParticleJS
+ParticleJS is an open-source particle generate that can be displayed in the background of your page by using an overlay canvas.
 
 > CDN:
 > https://cdn.jsdelivr.net/gh/XHiddenProjects/ParticlesJS@1.0.3/particles-es6.min.js
