@@ -1,11 +1,11 @@
 
 # ParticleJS — Lightweight Canvas Particle Engine
 
-**Version:** Updated 2026-01-05 citeturn1search1 citeturn1search2
+**Version:** Updated 2026-01-05
 
-ParticleJS is a lightweight, canvas-based particle engine that supports density-aware particle spawning, efficient spatial grid line-link rendering, and rich interactivity (hover, click, and custom behaviors like **explode**, **rocket**, **slide**, and **swirl**). citeturn1search1 citeturn1search2
+ParticleJS is a lightweight, canvas-based particle engine that supports density-aware particle spawning, efficient spatial grid line-link rendering, and rich interactivity (hover, click, and custom behaviors like **explode**, **rocket**, **slide**, and **swirl**).
 
-> Default interactivity flags: `onhover.enable = false`, `onclick.enable = false`. citeturn1search1 citeturn1search2
+> Default interactivity flags: `onhover.enable = false`, `onclick.enable = false`.
 
 ---
 
@@ -29,12 +29,12 @@ ParticleJS is a lightweight, canvas-based particle engine that supports density-
 
 ## Features
 
-- **Canvas-based rendering** with device-pixel-ratio (DPR) awareness (`retina_detect`) for crisp visuals. citeturn1search1 citeturn1search2
-- **Density clamping** to automatically scale particle count to the canvas area, with a hard maximum cap. citeturn1search1 citeturn1search2
-- **Spatial grid line-linking** for efficient line connections between nearby particles. citeturn1search1 citeturn1search2
-- **Interactivity**: hover & click events with modes like `grab`, `bubble`, `repulse`, `push`, `remove`, `explode`, and `rocketBoost`. citeturn1search1 citeturn1search2
-- **Custom motion behaviors**: `default`, `rocket` (vertical thrust), `slide` (damped alignment), and `swirl` (orbital motion). citeturn1search1 citeturn1search2
-- **Scene system** to encapsulate named configurations, including functional scenes that derive options from the current engine. citeturn1search1 citeturn1search2
+- **Canvas-based rendering** with device-pixel-ratio (DPR) awareness (`retina_detect`) for crisp visuals.
+- **Density clamping** to automatically scale particle count to the canvas area, with a hard maximum cap.
+- **Spatial grid line-linking** for efficient line connections between nearby particles.
+- **Interactivity**: hover & click events with modes like `grab`, `bubble`, `repulse`, `push`, `remove`, `explode`, and `rocketBoost`.
+- **Custom motion behaviors**: `default`, `rocket` (vertical thrust), `slide` (damped alignment), and `swirl` (orbital motion).
+- **Scene system** to encapsulate named configurations, including functional scenes that derive options from the current engine.
 
 ---
 
@@ -42,9 +42,11 @@ ParticleJS is a lightweight, canvas-based particle engine that supports density-
 
 Two distribution styles are provided:
 
-- **ES Module**: `particles-es6.js` — exports `ParticleJS` and `ParticleScene`. Use with bundlers or native `<script type="module">`. citeturn1search1
-- **IIFE (globals)**: `particles.js` — attaches `ParticleJS` and `ParticleScene` to `window`/`globalThis`. citeturn1search2
-
+- **ES Module**: `particles-es6.js` — exports `ParticleJS` and `ParticleScene`. Use with bundlers or native `<script type="module">`. 
+- **IIFE (globals)**: `particles.js` — attaches `ParticleJS` and `ParticleScene` to `window`/`globalThis`. 
+> CDN:
+> - http://cdn.jsdelivr.net/gh/XHiddenProjects/ParticlesJS@1.0.4/particles-es6.min.js
+> - http://cdn.jsdelivr.net/gh/XHiddenProjects/ParticlesJS@1.0.4/particles.min.js
 ---
 
 ## Installation
@@ -87,7 +89,7 @@ Two distribution styles are provided:
 </script>
 ```
 
-The ES module build exports classes, while the IIFE build exposes them globally. citeturn1search1 citeturn1search2
+The ES module build exports classes, while the IIFE build exposes them globally.
 
 ---
 
@@ -95,7 +97,7 @@ The ES module build exports classes, while the IIFE build exposes them globally.
 
 1. **Add a container** element with a fixed size.
 2. **Instantiate `ParticleJS`** with optional overrides.
-3. Call **`play()`** to start; use **`pause()`**/**`destroy()`** as needed; use **`setScene(...)`** to swap configurations on the fly. citeturn1search1 citeturn1search2
+3. Call **`play()`** to start; use **`pause()`**/**`destroy()`** as needed; use **`setScene(...)`** to swap configurations on the fly.
 
 ---
 
@@ -106,23 +108,23 @@ The ES module build exports classes, while the IIFE build exposes them globally.
 #### `ParticleJS`
 
 - **Constructor**: `new ParticleJS(container, options?)`
-  - `container`: `HTMLElement|string` (selector or element) — throws if not found. citeturn1search1 citeturn1search2
-  - `options`: partial options; merged with sensible defaults. citeturn1search1 citeturn1search2
+  - `container`: `HTMLElement|string` (selector or element) — throws if not found.
+  - `options`: partial options; merged with sensible defaults.
 - **Methods**:
-  - `play()` — starts the RAF animation loop. citeturn1search1 citeturn1search2
-  - `pause()` — stops the RAF loop. citeturn1search1 citeturn1search2
-  - `destroy()` — removes listeners and the canvas from the container. citeturn1search1 citeturn1search2
-  - `setScene(scene: ParticleScene)` — applies new options and reinitializes. citeturn1search1 citeturn1search2
+  - `play()` — starts the RAF animation loop.
+  - `pause()` — stops the RAF loop.
+  - `destroy()` — removes listeners and the canvas from the container.
+  - `setScene(scene: ParticleScene)` — applies new options and reinitializes.
 
 #### `ParticleScene`
 
-Encapsulates a named configuration. Accepts either a plain options object or a function `(engine) => options` to construct options dynamically. citeturn1search1 citeturn1search2
+Encapsulates a named configuration. Accepts either a plain options object or a function `(engine) => options` to construct options dynamically.
 
 ---
 
 ## Options
 
-Below are the main option groups (defaults shown): citeturn1search1 citeturn1search2
+Below are the main option groups (defaults shown):
 
 ```js
 {
@@ -176,15 +178,15 @@ Below are the main option groups (defaults shown): citeturn1search1 
 }
 ```
 
-The engine merges user-provided options with defaults (deep merge). citeturn1search1 citeturn1search2
+The engine merges user-provided options with defaults (deep merge).
 
 ---
 
 ## Interactivity Modes
 
-- **Hover (`onhover`)**: `grab`, `bubble`, `repulse`, `slide` (behavior-driven), or passive reset to base size/opacity. Hover is disabled by default. citeturn1search1 citeturn1search2
-- **Click (`onclick`)**: `push`, `remove`, `repulse`, `bubble` (timed), `explode`, `rocketBoost`. Click is disabled by default. citeturn1search1 citeturn1search2
-- **Pointer source**: `detect_on` can be `'window'`, `'canvas'`, `'container'`, or a specific `HTMLElement`. citeturn1search1 citeturn1search2
+- **Hover (`onhover`)**: `grab`, `bubble`, `repulse`, `slide` (behavior-driven), or passive reset to base size/opacity. Hover is disabled by default.
+- **Click (`onclick`)**: `push`, `remove`, `repulse`, `bubble` (timed), `explode`, `rocketBoost`. Click is disabled by default.
+- **Pointer source**: `detect_on` can be `'window'`, `'canvas'`, `'container'`, or a specific `HTMLElement`.
 
 ---
 
@@ -209,24 +211,24 @@ const interactiveSwirl = new ParticleScene('Interactive Swirl', (engine) => ({
 }));
 ```
 
-Functional scenes receive the current engine instance and return options. citeturn1search1 citeturn1search2
+Functional scenes receive the current engine instance and return options.
 
 ---
 
 ## Rendering & Performance
 
-- Uses `requestAnimationFrame` with clamped `dt` to advance simulation. citeturn1search1 citeturn1search2
-- DPR scaling (`retina_detect`) adjusts canvas resolution and sizes. citeturn1search1 citeturn1search2
-- Line-linking employs a **grid** to only check neighbors, reducing O(n²) pairs. citeturn1search1 citeturn1search2
-- Particle count auto-scales with **CSS area** via density, and is capped by `particles.number.max`. citeturn1search1 citeturn1search2
+- Uses `requestAnimationFrame` with clamped `dt` to advance simulation.
+- DPR scaling (`retina_detect`) adjusts canvas resolution and sizes.
+- Line-linking employs a **grid** to only check neighbors, reducing O(n²) pairs.
+- Particle count auto-scales with **CSS area** via density, and is capped by `particles.number.max`.
 
 ---
 
 ## Accessibility & DOM
 
-- The engine inserts a `<canvas>` with class `particle-js` positioned absolutely inside your container. citeturn1search1 citeturn1search2
-- The canvas is marked `aria-hidden="true"` and `pointer-events: none` to avoid obstructing UI interactions. citeturn1search1 citeturn1search2
-- If your container has `position: static`, the engine sets it to `position: relative`. citeturn1search1 citeturn1search2
+- The engine inserts a `<canvas>` with class `particle-js` positioned absolutely inside your container.
+- The canvas is marked `aria-hidden="true"` and `pointer-events: none` to avoid obstructing UI interactions.
+- If your container has `position: static`, the engine sets it to `position: relative`.
 
 ---
 
@@ -259,16 +261,16 @@ new ParticleJS('#particles', {
 
 ## Troubleshooting
 
-- **Nothing renders**: Ensure the container exists and has non-zero size; the constructor throws if the container cannot be found. citeturn1search1 citeturn1search2
-- **Canvas covers UI**: The canvas uses `pointer-events: none` and sits at `z-index: 0`; place interactive UI above it. citeturn1search1 citeturn1search2
-- **Too many/few particles**: Adjust `particles.number.value`, `value_area`, and `max`. Density scales with CSS area. citeturn1search1 citeturn1search2
-- **Interaction source**: Change `interactivity.detect_on` to `'window'`, `'canvas'`, `'container'`, or a specific element. citeturn1search1 citeturn1search2
+- **Nothing renders**: Ensure the container exists and has non-zero size; the constructor throws if the container cannot be found.
+- **Canvas covers UI**: The canvas uses `pointer-events: none` and sits at `z-index: 0`; place interactive UI above it.
+- **Too many/few particles**: Adjust `particles.number.value`, `value_area`, and `max`. Density scales with CSS area.
+- **Interaction source**: Change `interactivity.detect_on` to `'window'`, `'canvas'`, `'container'`, or a specific element.
 
 ---
 
 ## Changelog
 
-- **2026-01-05** — Engine updated with custom behaviors (`explode`, `rocket`, `slide`, `swirl`), density clamping, and spatial grid line-linking. Default hover/click interactivity remains disabled. citeturn1search1 citeturn1search2
+- **2026-01-05** — Engine updated with custom behaviors (`explode`, `rocket`, `slide`, `swirl`), density clamping, and spatial grid line-linking. Default hover/click interactivity remains disabled.
 
 ---
 
