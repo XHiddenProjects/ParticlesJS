@@ -1,85 +1,55 @@
 /**
  * @fileoverview Canvas particle engine (IIFE build).
  *
- * This file defines a small particle engine rendered with the HTML5 Canvas 2D API.
+ * This file defines a lightweight particle engine rendered with the HTML5 Canvas 2D API.
  * It exposes {@link ParticleJS} and {@link ParticleScene} on `globalThis` (or `window`).
  *
  * ## Highlights
+ * - Density-aware initial population (scales count by canvas area)
  * - Random particle spawning (uniform distribution across the canvas)
  * - Optional line-linking using a spatial grid for performance
  * - Hover/click interactivity modes (disabled by default)
  * - Simple physics (drag + gravity) and optional behaviors: `default`, `rocket`, `slide`, `swirl`
  *
- * ## Density (deprecated)
- * Historically the engine supported `particles.number.density` to scale the particle count
- * by canvas area. This behavior is **disabled** in this build to prevent click-to-add
- * interactions from being effectively blocked by density-based pre-filling.
- * The engine now always uses `particles.number.value` (clamped by `particles.number.max`).
+ * ## Density + click behavior
+ * When `particles.number.density.enable=true`, the engine scales the initial particle count by canvas area
+ * and clamps the result by `particles.number.max`.
+ * Click mode `push` is **never blocked**: if the engine is already at the cap, it recycles the oldest
+ * particles (removes N, adds N) so clicks always cause visible changes without exceeding the cap.
  *
  * @version 2026-01-05
  */
 
-/**
- * @typedef {'circle'|'edge'|'triangle'|'polygon'|'image'} ParticleShapeType
- */
-
-/**
- * @typedef {'none'|'top'|'bottom'|'left'|'right'|'top-right'|'top-left'|'bottom-right'|'bottom-left'} MoveDirection
- */
-
-/**
- * @typedef {'default'|'rocket'|'slide'|'swirl'} MoveBehavior
- */
-
-/**
- * @typedef {'grab'|'bubble'|'repulse'|'push'|'remove'|'explode'|'rocketBoost'} InteractivityMode
- */
+/** @typedef {'circle'|'edge'|'triangle'|'polygon'|'image'} ParticleShapeType */
+/** @typedef {'none'|'top'|'bottom'|'left'|'right'|'top-right'|'top-left'|'bottom-right'|'bottom-left'} MoveDirection */
+/** @typedef {'default'|'rocket'|'slide'|'swirl'} MoveBehavior */
+/** @typedef {'grab'|'bubble'|'repulse'|'push'|'remove'|'explode'|'rocketBoost'} InteractivityMode */
 
 /**
  * @typedef {Object} ParticleNumberOptions
- * @property {number} value - Initial particle count.
- * @property {{enable?: boolean, value_area?: number}} [density] - Deprecated/ignored.
+ * @property {number} value - Base particle count.
+ * @property {{enable?: boolean, value_area?: number}} [density] - When enabled, scales `value` by canvas area.
  * @property {number} [max] - Hard cap for total particle count.
  */
 
 /**
  * @typedef {Object} Particle
- * @property {number} x - X position (in device pixels).
- * @property {number} y - Y position (in device pixels).
- * @property {number} vx - X velocity (device px/sec).
- * @property {number} vy - Y velocity (device px/sec).
- * @property {number} ax - X acceleration (device px/sec^2).
- * @property {number} ay - Y acceleration (device px/sec^2).
- * @property {number} size - Current size scalar (CSS px, multiplied by DPR during render).
- * @property {number} baseSize - Rest size used for easing back after bubble effects.
- * @property {number} opacity - Current opacity [0..1].
- * @property {number} baseOpacity - Rest opacity used for easing back after bubble effects.
- * @property {string} fillStyle - Fill color.
- * @property {string|null} strokeStyle - Stroke color or null.
- * @property {HTMLImageElement|null} image - Optional sprite image when using `shape.type='image'`.
- * @property {boolean} [_dead] - Internal flag for removal.
+ * @property {number} x
+ * @property {number} y
+ * @property {number} vx
+ * @property {number} vy
+ * @property {number} ax
+ * @property {number} ay
+ * @property {number} size
+ * @property {number} baseSize
+ * @property {number} opacity
+ * @property {number} baseOpacity
+ * @property {string} fillStyle
+ * @property {string|null} strokeStyle
+ * @property {HTMLImageElement|null} image
+ * @property {boolean} [_dead]
  */
 
-/**
- * @typedef {Object} ParticleEngineOptions
- * @property {boolean} [retina_detect=true] - When true, scales rendering by devicePixelRatio.
- * @property {string} [background='transparent'] - Canvas background.
- * @property {{
- *   number: ParticleNumberOptions,
- *   color: {value: string|string[]},
- *   shape: {type: ParticleShapeType, stroke: {width:number, color:string}, polygon: {nb_sides:number}, image: {src:string, width:number, height:number}},
- *   opacity: {value:number, random:boolean, anim:{enable:boolean, speed:number, opacity_min:number, sync:boolean}},
- *   size: {value:number, random:boolean, anim:{enable:boolean, speed:number, size_min:number, sync:boolean}},
- *   line_linked: {enable:boolean, distance:number, color:string, opacity:number, width:number},
- *   physics: {drag:number, gravity:number},
- *   move: {enable:boolean, speed:number|number[], direction:MoveDirection, random:boolean, straight:boolean, out_mode:'out'|'bounce', bounce:boolean, attract:{enable:boolean, rotateX:number, rotateY:number}, behavior:MoveBehavior, rocket:{thrust:number}, slide:{stiffness:number}, swirl:{strength:number}}
- * }} particles
- * @property {{
- *   detect_on:'container'|'canvas'|'window'|HTMLElement,
- *   events:{onhover:{enable:boolean, mode:InteractivityMode}, onclick:{enable:boolean, mode:InteractivityMode|null}, resize:boolean},
- *   modes:{grab:{distance:number, line_linked:{opacity:number}}, bubble:{distance:number, size:number, duration:number, opacity:number, speed:number}, repulse:{distance:number, duration:number}, push:{particles_nb:number}, remove:{particles_nb:number}, explode:{power:number}, rocketBoost:{power:number}}
- * }} interactivity
- */
 
 (function (global) {
   'use strict';
@@ -118,33 +88,20 @@ class ParticleJS {
 
    */
   pause() { if (!this.running) return; this.running = false; cancelAnimationFrame(this._rafId); }
-  /**
-   * Stop animation, remove listeners, and remove the canvas element.
-   * @returns {void}
-
-   */
-  destroy() { this.pause(); this._unbindEvents(); if (this.canvas?.parentElement === this.container) this.container.removeChild(this.canvas); }
+    destroy() { this.pause(); this._unbindEvents(); if (this.canvas?.parentElement === this.container) this.container.removeChild(this.canvas); }
   /**
    * Apply a new scene and reinitialize the engine.
    * @param {ParticleScene} scene - Scene to apply.
    * @returns {this}
    */
   setScene(scene) { if (!(scene instanceof ParticleScene)) { throw new Error('ParticleJS.setScene: only ParticleScene instances are supported.'); } const next = scene.toOptions(this); this.options = this._withDefaults(next); this.dpr = this.options.retina_detect ? Math.max(1, window.devicePixelRatio ?? 1) : 1; if (this.canvas) this.canvas.style.background = this.options.background ?? 'transparent'; this._unbindEvents(); this._bindEvents(); this._resize(); this._populate(); return this; }
-    _withDefaults(opts) { const def = { retina_detect: true, background: 'transparent', particles: { number: { value: 60, density: { enable: false, value_area: 800 }, max: 300 }, color: { value: '#fff' }, shape: { type: 'circle', stroke: { width: 0, color: '#000' }, polygon: { nb_sides: 5 }, image: { src: '', width: 100, height: 100 } }, opacity: { value: 0.6, random: false, anim: { enable: false, speed: 1, opacity_min: 0.1, sync: false } }, size: { value: 4, random: true, anim: { enable: false, speed: 40, size_min: 0.1, sync: false } }, line_linked: { enable: true, distance: 150, color: '#fff', opacity: 0.4, width: 1 }, physics: { drag: 0.98, gravity: 0 }, move: { enable: true, speed: 2, direction: 'none', random: false, straight: false, out_mode: 'out', bounce: false, attract: { enable: false, rotateX: 600, rotateY: 1200 }, behavior: 'default', rocket: { thrust: 120 }, slide: { stiffness: 4 }, swirl: { strength: 60 } } }, interactivity: { detect_on: 'container', events: { onhover: { enable: false, mode: 'grab' }, onclick: { enable: false, mode: 'push' }, resize: true }, modes: { grab: { distance: 140, line_linked: { opacity: 1 } }, bubble: { distance: 200, size: 20, duration: 0.4, opacity: 0.8, speed: 3 }, repulse: { distance: 100, duration: 0.4 }, push: { particles_nb: 4 }, remove: { particles_nb: 2 }, explode: { power: 300 }, rocketBoost: { power: 180 } } } }; return this._merge(def, opts ?? {}); }
+    _withDefaults(opts) { const def = { retina_detect: true, background: 'transparent', particles: { number: { value: 60, density: { enable: true, value_area: 800 }, max: 300 }, color: { value: '#fff' }, shape: { type: 'circle', stroke: { width: 0, color: '#000' }, polygon: { nb_sides: 5 }, image: { src: '', width: 100, height: 100 } }, opacity: { value: 0.6, random: false, anim: { enable: false, speed: 1, opacity_min: 0.1, sync: false } }, size: { value: 4, random: true, anim: { enable: false, speed: 40, size_min: 0.1, sync: false } }, line_linked: { enable: true, distance: 150, color: '#fff', opacity: 0.4, width: 1 }, physics: { drag: 0.98, gravity: 0 }, move: { enable: true, speed: 2, direction: 'none', random: false, straight: false, out_mode: 'out', bounce: false, attract: { enable: false, rotateX: 600, rotateY: 1200 }, behavior: 'default', rocket: { thrust: 120 }, slide: { stiffness: 4 }, swirl: { strength: 60 } } }, interactivity: { detect_on: 'container', events: { onhover: { enable: false, mode: 'grab' }, onclick: { enable: false, mode: 'push' }, resize: true }, modes: { grab: { distance: 140, line_linked: { opacity: 1 } }, bubble: { distance: 200, size: 20, duration: 0.4, opacity: 0.8, speed: 3 }, repulse: { distance: 100, duration: 0.4 }, push: { particles_nb: 4 }, remove: { particles_nb: 2 }, explode: { power: 300 }, rocketBoost: { power: 180 } } } }; return this._merge(def, opts ?? {}); }
     _ensureCanvas(parent) { let canvas = parent.querySelector('canvas.particle-js'); if (!canvas) { canvas = document.createElement('canvas'); canvas.className = 'particle-js'; canvas.style.position = 'absolute'; canvas.style.top = '0'; canvas.style.left = '0'; canvas.style.width = '100%'; canvas.style.height = '100%'; canvas.style.zIndex = '0'; canvas.style.pointerEvents = 'none'; canvas.setAttribute('aria-hidden', 'true'); const cs = window.getComputedStyle(parent); if (cs.position === 'static') parent.style.position = 'relative'; parent.appendChild(canvas); } canvas.style.background = this.options.background ?? 'transparent'; return canvas; }
     _bindEvents() { const detectOn = this.options.interactivity.detect_on; const target = detectOn === 'window' ? window : detectOn === 'canvas' ? this.canvas : detectOn === 'container' ? this.container : detectOn; const moveHandler = (e) => { const { x, y } = this._pointerPos(e); this.pointer.x = x; this.pointer.y = y; this.pointer.active = true; }; const leaveHandler = () => { this.pointer.active = false; }; const clickHandler = () => { this.pointer.lastClick = performance.now(); const mode = this.options.interactivity.events.onclick?.mode; this._applyClickMode(mode); }; target.addEventListener('mousemove', moveHandler, { passive: true }); target.addEventListener('touchmove', moveHandler, { passive: true }); target.addEventListener('mouseleave', leaveHandler, { passive: true }); target.addEventListener('touchend', leaveHandler, { passive: true }); target.addEventListener('click', clickHandler); this._listeners = { target, moveHandler, leaveHandler, clickHandler }; }
     _unbindEvents() { if (!this._listeners) return; const { target, moveHandler, leaveHandler, clickHandler } = this._listeners; target.removeEventListener('mousemove', moveHandler); target.removeEventListener('touchmove', moveHandler); target.removeEventListener('mouseleave', leaveHandler); target.removeEventListener('touchend', leaveHandler); target.removeEventListener('click', clickHandler); this._listeners = null; }
     _pointerPos(e) { const detectOn = this.options.interactivity.detect_on; const clientX = (e.touches && e.touches[0] ? e.touches[0].clientX : e.clientX); const clientY = (e.touches && e.touches[0] ? e.touches[0].clientY : e.clientY); const baseEl = detectOn === 'window' ? this.container : detectOn === 'canvas' ? this.canvas : detectOn === 'container' ? this.container : detectOn; const rect = baseEl.getBoundingClientRect(); const cx = clientX - rect.left; const cy = clientY - rect.top; return { x: cx * this.dpr, y: cy * this.dpr }; }
-    _populate() {
-  this.particles.length = 0;
-  const numOpt = this.options?.particles?.number ?? { value: 0 };
-  let count = Math.max(0, Math.floor(numOpt.value ?? 0));
-  const capRaw = numOpt.max;
-  const cap = Number.isFinite(capRaw) ? Math.max(0, Math.floor(capRaw)) : Infinity;
-  count = Math.min(count, cap);
-  for (let i = 0; i < count; i++) this.particles.push(this._spawnParticle());
-}
- _spawnParticle() { const { particles: p } = this.options; const { width, height } = this.canvas; const x = Math.random() * width; const y = Math.random() * height; const speed = Array.isArray(p.move.speed) ? (Math.floor(Math.random() * (p.move.speed[1] - p.move.speed[0] + 1)) + p.move.speed[0]) : p.move.speed * this.dpr; const dir = this._directionVector(p.move.direction); const straight = p.move.straight; const randomize = p.move.random; let vx, vy; if (straight) { vx = dir.x * speed; vy = dir.y * speed; } else { const baseAngle = Math.atan2(dir.y, dir.x); const a = baseAngle + (randomize ? (Math.random() - 0.5) * Math.PI : 0); vx = Math.cos(a) * speed * (0.5 + Math.random()); vy = Math.sin(a) * speed * (0.5 + Math.random()); } const sizeBase = p.size.value; const size = p.size.random ? sizeBase * (0.5 + Math.random()) : sizeBase; const opBase = p.opacity.value; const opacity = p.opacity.random ? opBase * (0.5 + Math.random()) : opBase; const color = this._pickColor(p.color.value); const stroke = p.shape.stroke?.width > 0 ? p.shape.stroke.color : null; const part = { x, y, vx, vy, ax: 0, ay: 0, size, baseSize: size, opacity, baseOpacity: opacity, fillStyle: color, strokeStyle: stroke, image: null }; if (p.shape.type === 'image' && p.shape.image?.src) { this._loadImage(p.shape.image.src).then(img => part.image = img); } return part; }
+    _populate() { this.particles.length = 0; const numOpt = this.options.particles.number; const cssArea = (this.canvas.width * this.canvas.height) / (this.dpr * this.dpr); let count = numOpt.value; if (numOpt.density?.enable) { const baseArea = Math.max(1, numOpt.density.value_area ?? 800); const factor = cssArea / baseArea; count = Math.max(1, Math.round(numOpt.value * factor)); } const cap = Math.max(1, numOpt.max ?? 300); count = Math.min(count, cap); for (let i = 0; i < count; i++) this.particles.push(this._spawnParticle()); }
+    _spawnParticle() { const { particles: p } = this.options; const { width, height } = this.canvas; const x = Math.random() * width; const y = Math.random() * height; const speed = Array.isArray(p.move.speed) ? (Math.floor(Math.random() * (p.move.speed[1] - p.move.speed[0] + 1)) + p.move.speed[0]) : p.move.speed * this.dpr; const dir = this._directionVector(p.move.direction); const straight = p.move.straight; const randomize = p.move.random; let vx, vy; if (straight) { vx = dir.x * speed; vy = dir.y * speed; } else { const baseAngle = Math.atan2(dir.y, dir.x); const a = baseAngle + (randomize ? (Math.random() - 0.5) * Math.PI : 0); vx = Math.cos(a) * speed * (0.5 + Math.random()); vy = Math.sin(a) * speed * (0.5 + Math.random()); } const sizeBase = p.size.value; const size = p.size.random ? sizeBase * (0.5 + Math.random()) : sizeBase; const opBase = p.opacity.value; const opacity = p.opacity.random ? opBase * (0.5 + Math.random()) : opBase; const color = this._pickColor(p.color.value); const stroke = p.shape.stroke?.width > 0 ? p.shape.stroke.color : null; const part = { x, y, vx, vy, ax: 0, ay: 0, size, baseSize: size, opacity, baseOpacity: opacity, fillStyle: color, strokeStyle: stroke, image: null }; if (p.shape.type === 'image' && p.shape.image?.src) { this._loadImage(p.shape.image.src).then(img => part.image = img); } return part; }
     _step(dt) { const ctx = this.ctx; ctx.save(); ctx.clearRect(0, 0, this.canvas.width, this.canvas.height); ctx.restore(); for (const particle of this.particles) { this._updateParticle(particle, dt); this._drawParticle(ctx, particle); } this._linkParticles(ctx); if (this.pointer.active && this.options.interactivity.events.onhover.enable) { const mode = this.options.interactivity.events.onhover.mode; if (mode === 'grab') this._drawGrabLines(ctx); } }
     _updateParticle(p, dt) { const move = this.options.particles.move; if (move.attract?.enable) { const cx = this.canvas.width / 2, cy = this.canvas.height / 2; const dx = cx - p.x, dy = cy - p.y; const dist2 = dx * dx + dy * dy; const f = Math.min(0.00004 * this.dpr, 1 / Math.max(1, dist2)); p.vx += dx * f * (move.attract.rotateX / 1000); p.vy += dy * f * (move.attract.rotateY / 1000); } if (this.pointer.active && this.options.interactivity.events.onhover.enable) { const mode = this.options.interactivity.events.onhover.mode; const dx = p.x - this.pointer.x; const dy = p.y - this.pointer.y; const dist = Math.hypot(dx, dy); const m = this.options.interactivity.modes; if (mode === 'repulse' && dist < m.repulse.distance * this.dpr) { const strength = Math.max(0.0001, m.repulse.distance * this.dpr - dist); const angle = Math.atan2(dy, dx); const force = (strength / (m.repulse.distance * this.dpr)) * 400 * dt; p.vx += Math.cos(angle) * force; p.vy += Math.sin(angle) * force; } else if (mode === 'bubble' && dist < m.bubble.distance * this.dpr) { const k = 1 - dist / (m.bubble.distance * this.dpr); p.size = p.baseSize + (m.bubble.size - p.baseSize) * k; p.opacity = p.baseOpacity + (m.bubble.opacity - p.baseOpacity) * k; } else if (mode === 'slide') { p.vx += (this.pointer.x - p.x) * 0.5 * dt; p.vy += (this.pointer.y - p.y) * 0.2 * dt; } else { p.size += (p.baseSize - p.size) * Math.min(1, dt * 4); p.opacity += (p.baseOpacity - p.opacity) * Math.min(1, dt * 4); } } const clickSince = (performance.now() - this.pointer.lastClick) / 1000; const clickBubble = this.options.interactivity.events.onclick.enable && this.options.interactivity.events.onclick.mode === 'bubble' && clickSince < (this.options.interactivity.modes.bubble.duration); if (clickBubble) { const dx = p.x - this.pointer.x; const dy = p.y - this.pointer.y; const dist = Math.hypot(dx, dy); const m = this.options.interactivity.modes; if (dist < m.bubble.distance * this.dpr) { const k = 1 - dist / (m.bubble.distance * this.dpr); p.size = p.baseSize + (m.bubble.size - p.baseSize) * k; p.opacity = p.baseOpacity + (m.bubble.opacity - p.baseOpacity) * k; } } const phys = this.options.particles.physics ?? {}; const drag = Math.max(0, Math.min(1, phys.drag ?? 1)); const gravity = (phys.gravity ?? 0) * this.dpr; const beh = move.behavior ?? 'default'; if (beh === 'rocket') { const thrust = (move.rocket?.thrust ?? 0) * this.dpr; p.vy -= thrust * dt; } else if (beh === 'slide') { p.vy += (0 - p.vy) * Math.min(1, dt * (move.slide?.stiffness ?? 4)); } else if (beh === 'swirl') { const cx = this.canvas.width / 2, cy = this.canvas.height / 2; const dx = cx - p.x, dy = cy - p.y; const d = Math.hypot(dx, dy) + 0.0001; const s = (move.swirl?.strength ?? 60) * this.dpr; p.vx += (-dy / d) * s * dt; p.vy += (dx / d) * s * dt; } p.vy += gravity * dt; const dragFactor = drag ** (dt * 60); p.vx *= dragFactor; p.vy *= dragFactor; p.x += p.vx * dt; p.y += p.vy * dt; if (this.options.particles.move.out_mode === 'bounce') { if (p.x < 0 || p.x > this.canvas.width) p.vx *= -1; if (p.y < 0 || p.y > this.canvas.height) p.vy *= -1; p.x = Math.max(0, Math.min(this.canvas.width, p.x)); p.y = Math.max(0, Math.min(this.canvas.height, p.y)); } else { if (p.x < -50) p.x = this.canvas.width + 50; if (p.x > this.canvas.width + 50) p.x = -50; if (p.y < -50) p.y = this.canvas.height + 50; if (p.y > this.canvas.height + 50) p.y = -50; } }
     _drawParticle(ctx, p) { ctx.save(); ctx.globalAlpha = Math.max(0, Math.min(1, p.opacity)); ctx.fillStyle = p.fillStyle; if (p.strokeStyle) { ctx.strokeStyle = p.strokeStyle; ctx.lineWidth = this.options.particles.shape.stroke.width * this.dpr; } const type = this.options.particles.shape.type; switch (type) { case 'circle': ctx.beginPath(); ctx.arc(p.x, p.y, p.size * this.dpr, 0, Math.PI * 2); ctx.closePath(); if (p.strokeStyle) ctx.stroke(); ctx.fill(); break; case 'edge': { const s = p.size * this.dpr; ctx.beginPath(); ctx.rect(p.x - s/2, p.y - s/2, s, s); if (p.strokeStyle) ctx.stroke(); ctx.fill(); ctx.closePath(); break; } case 'triangle': { const s = p.size * this.dpr; ctx.beginPath(); ctx.moveTo(p.x, p.y - s / Math.sqrt(3)); ctx.lineTo(p.x - s / 2, p.y + s / (2 * Math.sqrt(3))); ctx.lineTo(p.x + s / 2, p.y + s / (2 * Math.sqrt(3))); ctx.closePath(); if (p.strokeStyle) ctx.stroke(); ctx.fill(); break; } case 'polygon': { const sides = Math.max(3, this.options.particles.shape.polygon.nb_sides ?? 5); const r = p.size * this.dpr; ctx.beginPath(); for (let i = 0; i < sides; i++) { const a = (i / sides) * Math.PI * 2; const x = p.x + r * Math.cos(a); const y = p.y + r * Math.sin(a); if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y); } ctx.closePath(); if (p.strokeStyle) ctx.stroke(); ctx.fill(); break; } case 'image': if (p.image && p.image.complete) { const w = (this.options.particles.shape.image.width ?? p.size) * this.dpr; const h = (this.options.particles.shape.image.height ?? p.size) * this.dpr; ctx.drawImage(p.image, p.x - w/2, p.y - h/2, w, h); } else { ctx.beginPath(); ctx.arc(p.x, p.y, p.size * this.dpr, 0, Math.PI * 2); ctx.closePath(); ctx.fill(); } break; default: ctx.beginPath(); ctx.arc(p.x, p.y, p.size * this.dpr, 0, Math.PI * 2); ctx.closePath(); ctx.fill(); } ctx.restore(); }
@@ -153,8 +110,21 @@ class ParticleJS {
     _applyClickMode(mode) {
     // Do nothing if click is disabled
     if (!(this.options?.interactivity?.events?.onclick?.enable)) return;
- if (!mode) return; const modes = this.options.interactivity.modes; const capRaw = this.options.particles.number.max ?? 300;
-    const cap = Number.isFinite(capRaw) ? Math.max(0, capRaw) : 300; switch (mode) { case 'push': { const want = modes.push.particles_nb; const free = Math.max(0, cap - this.particles.length); const add = Math.min(want, free); for (let i = 0; i < add; i++) this.particles.push(this._spawnParticle()); break; } case 'remove': { const n = Math.min(modes.remove.particles_nb, this.particles.length); this.particles.splice(0, n); break; } case 'repulse': for (const p of this.particles) { const dx = p.x - this.pointer.x; const dy = p.y - this.pointer.y; const d = Math.hypot(dx, dy) || 1; const force = Math.min(600, 6000 / d); p.vx += (dx / d) * force; p.vy += (dy / d) * force; } break; case 'bubble': break; case 'explode': { const power = modes.explode?.power ?? 300; for (const p of this.particles) { const dx = p.x - this.pointer.x; const dy = p.y - this.pointer.y; const d = Math.hypot(dx, dy) || 1; const impulse = power / d; p.vx += (dx / d) * impulse; p.vy += (dy / d) * impulse; } break; } case 'rocketBoost': { const power = modes.rocketBoost?.power ?? 180; for (const p of this.particles) { p.vy -= power * this.dpr * 0.02; } break; } } }
+ if (!mode) return; const modes = this.options.interactivity.modes; const cap = Math.max(1, this.options.particles.number.max ?? 300); switch (mode) { case 'push': {
+    const want = modes.push.particles_nb;
+    const cap = Math.max(1, this.options.particles.number.max ?? 300);
+    const room = Math.max(0, cap - this.particles.length);
+    const add = Math.min(want, room);
+    for (let i = 0; i < add; i++) this.particles.push(this._spawnParticle());
+    // If at cap, recycle oldest particles so clicks still have an effect.
+    const overflow = want - add;
+    if (overflow > 0) {
+      const removeN = Math.min(overflow, this.particles.length);
+      this.particles.splice(0, removeN);
+      for (let i = 0; i < removeN; i++) this.particles.push(this._spawnParticle());
+    }
+    break;
+  } case 'remove': { const n = Math.min(modes.remove.particles_nb, this.particles.length); this.particles.splice(0, n); break; } case 'repulse': for (const p of this.particles) { const dx = p.x - this.pointer.x; const dy = p.y - this.pointer.y; const d = Math.hypot(dx, dy) || 1; const force = Math.min(600, 6000 / d); p.vx += (dx / d) * force; p.vy += (dy / d) * force; } break; case 'bubble': break; case 'explode': { const power = modes.explode?.power ?? 300; for (const p of this.particles) { const dx = p.x - this.pointer.x; const dy = p.y - this.pointer.y; const d = Math.hypot(dx, dy) || 1; const impulse = power / d; p.vx += (dx / d) * impulse; p.vy += (dy / d) * impulse; } break; } case 'rocketBoost': { const power = modes.rocketBoost?.power ?? 180; for (const p of this.particles) { p.vy -= power * this.dpr * 0.02; } break; } } }
     _resize() { if (this._resizeRaf) cancelAnimationFrame(this._resizeRaf); this._resizeRaf = requestAnimationFrame(() => { const rect = this.container.getBoundingClientRect(); this.canvas.width = Math.max(1, Math.floor(rect.width * this.dpr)); this.canvas.height = Math.max(1, Math.floor(rect.height * this.dpr)); if (this.options.interactivity.events.resize) this._populate(); }); }
     _merge(a, b) { if (Array.isArray(a) || Array.isArray(b)) return b ?? a; if (typeof a === 'object' && a !== null && typeof b === 'object' && b !== null) { const out = { ...a }; for (const k of Object.keys(b)) out[k] = this._merge(a[k], b[k]); return out; } return b ?? a; }
     _directionVector(dir) { const map = { 'none': { x: (Math.random() - 0.5), y: (Math.random() - 0.5) }, 'top': { x: 0, y: -1 }, 'bottom': { x: 0, y: 1 }, 'left': { x: -1, y: 0 }, 'right': { x: 1, y: 0 }, 'top-right': { x: Math.SQRT1_2, y: -Math.SQRT1_2 }, 'top-left': { x: -Math.SQRT1_2, y: -Math.SQRT1_2 }, 'bottom-right': { x: Math.SQRT1_2, y: Math.SQRT1_2 }, 'bottom-left': { x: -Math.SQRT1_2, y: Math.SQRT1_2 } }; return map[dir] ?? map['none']; }
